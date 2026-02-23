@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Domain\Tickets\Models\Ticket;
+use App\Domain\Tickets\Models\Comment;
+use App\Domain\Tickets\Models\TicketHistory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -45,4 +49,25 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function createdTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'creator_id');
+    }
+
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assignee_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function ticketHistoryActions(): HasMany
+    {
+        return $this->hasMany(TicketHistory::class, 'actor_id');
+    }
+
 }
