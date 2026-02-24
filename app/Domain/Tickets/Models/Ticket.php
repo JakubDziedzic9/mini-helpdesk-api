@@ -8,6 +8,7 @@ use Database\Factories\TicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Ticket extends Model
 {
@@ -52,5 +53,20 @@ class Ticket extends Model
     public function history(): HasMany
     {
         return $this->hasMany(TicketHistory::class);
+    }
+
+    public function scopeForUser(Builder $query, int $userId): Builder
+    {
+        return $query->where('creator_id', $userId);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_archived', false);
+    }
+
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->where('is_archived', true);
     }
 }

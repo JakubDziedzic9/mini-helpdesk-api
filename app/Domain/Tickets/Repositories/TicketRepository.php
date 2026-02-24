@@ -16,4 +16,8 @@ interface TicketRepository
     public function save(Ticket $ticket): Ticket;
 
     public function paginate(int $perPage = 15): LengthAwarePaginator;
+
+    public function listActiveForUser(int $userId);
+    
+    public function listArchivedForUser(int $userId);
 }

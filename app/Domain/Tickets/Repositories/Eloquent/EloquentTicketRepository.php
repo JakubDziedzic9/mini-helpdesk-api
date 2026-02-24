@@ -34,4 +34,22 @@ class EloquentTicketRepository implements TicketRepository
     {
         return Ticket::query()->latest()->paginate($perPage);
     }
+
+    public function listActiveForUser(int $userId)
+    {
+        return Ticket::query()
+            ->where('creator_id', $userId)
+            ->where('is_archived', false)
+            ->latest()
+            ->get();
+    }
+
+    public function listArchivedForUser(int $userId)
+    {
+        return Ticket::query()
+            ->where('creator_id', $userId)
+            ->where('is_archived', true)
+            ->latest('archived_at')
+            ->get();
+    }
 }
