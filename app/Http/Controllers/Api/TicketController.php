@@ -70,20 +70,24 @@ class TicketController extends Controller
             403
         );
 
-        $isArchivingRequest = $request->query('archive') === 'true' || $request->input('archive') === true;
-
-        if ($isArchivingRequest) {
-            $this->ticketService->archive($ticket);
-            return response()->json(['message' => 'Ticket archived.']);
-        }
-
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'status' => ['sometimes', 'in:open,in_progress,resolved,closed'],
             'priority' => ['sometimes', 'in:low,normal,high'],
             'assignee_id' => ['sometimes', 'nullable', 'exists:users,id'],
+            'action' => ['sometimes', 'in:archive'],
         ]);
+
+        if (($validated['action'] ?? null) === 'archive') {
+            $this->ticketService->archive($ticket);
+
+            return response()->json([
+                'message' => 'Ticket archived.'
+            ]);
+        }
+
+        unset($validated['action']);
 
         $ticket = $this->ticketService->update($ticket, $validated);
 
