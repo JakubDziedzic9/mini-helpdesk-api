@@ -11,6 +11,10 @@ use App\Domain\Tickets\Repositories\Eloquent\EloquentTicketRepository;
 use App\Domain\Tickets\Repositories\CommentRepository;
 use App\Domain\Tickets\Repositories\Eloquent\EloquentCommentRepository;
 
+use Illuminate\Support\Facades\Gate;
+use App\Domain\Tickets\Models\Ticket;
+use App\Policies\TicketPolicy;
+
 use App\Domain\Tickets\Repositories\TicketHistoryRepository;
 use App\Domain\Tickets\Repositories\Eloquent\EloquentTicketHistoryRepository;
 
@@ -27,5 +31,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(Ticket::class, TicketPolicy::class);
     }
 }
