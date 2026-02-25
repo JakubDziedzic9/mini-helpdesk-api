@@ -1,59 +1,95 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Mini Helpdesk API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains the backend for a simple help‑desk ticketing system built with Laravel 11.
 
-## About Laravel
+## 🚀 Getting Started
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.1+
+- Composer
+- MySQL (or compatible database)
+- [Laravel Sail](https://laravel.com/docs/sail) / local server environment
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Installation
 
-## Learning Laravel
+```bash
+git clone <repo-url> mini-helpdesk-api
+cd mini-helpdesk-api
+composer install
+cp .env.example .env      # configure DB credentials etc.
+php artisan key:generate
+php artisan migrate
+php artisan db:seed        # loads sample users/tickets/comments
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Run the application:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+php artisan serve           # default http://127.0.0.1:8000
+```
 
-## Laravel Sponsors
+### Authentication
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+The API uses **Laravel Sanctum** for token authentication. Register/login to obtain a bearer token, then include it in the `Authorization` header for protected routes:
 
-### Premium Partners
+```
+Authorization: Bearer {token}
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
 
-## Contributing
+## 📦 Available Endpoints
+All routes are prefixed with `/api` and protected routes require a valid token.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Authentication
 
-## Code of Conduct
+| Method | URI                 | Description                | Body params                              |
+|--------|---------------------|----------------------------|-------------------------------------------|
+| POST   | `/auth/register`    | Create new user            | `name`, `email`, `password`, `password_confirmation` |
+| POST   | `/auth/login`       | Obtain auth token          | `email`, `password`                       |
+| POST   | `/auth/logout`      | Revoke current token       | – (auth required)                         |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Tickets
 
-## Security Vulnerabilities
+| Method | URI                              | Description                         | Body params / query                         |
+|--------|----------------------------------|-------------------------------------|---------------------------------------------|
+| POST   | `/tickets`                       | Create ticket                       | `title` **(required)**, `description`, `priority` (`low|normal|high`) |
+| GET    | `/tickets`                       | List tickets                        | optional `?archive=true` for archived ones  |
+| GET    | `/tickets/{ticket}`              | Get single ticket                   | –                                           |
+| PATCH  | `/tickets/{ticket}`              | Update ticket or archive action     | any of `title`, `description`, `status` (`open,in_progress,resolved,closed`), `priority`, `assignee_id`, **`action: "archive"`** to archive |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> Archived tickets are simply tickets with `is_archived = true`. The `?archive` query parameter filters the list.
 
-## License
+### Comments
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Method | URI                                      | Description                         | Body params                               |
+|--------|------------------------------------------|-------------------------------------|--------------------------------------------|
+| POST   | `/tickets/{ticket}/comments`             | Add comment to ticket               | `body` **(required)**                      |
+| GET    | `/tickets/{ticket}/comments`             | List comments for ticket            | paginated                                  |
+| GET    | `/comments`                              | List comments created by current user | paginated                                 |
+| GET    | `/comments/{comment}`                    | Show one of user's comments         | –                                          |
+| PATCH  | `/comments/{comment}`                    | Edit own comment                    | `body` **(required)**                      |
+| DELETE | `/comments/{comment}`                    | Delete own comment                  | –                                          |
+
+> Authorization: users can only view/modify comments they created; ticket comments listing is open to ticket owner only.
+
+
+## 🛠 Architectural Notes
+
+- **Domain‑Driven Design**: Repositories and services live under `app/Domain`.
+- **Exception handling**: Custom renderers in `bootstrap/app.php` convert domain or auth errors to JSON.
+- **Status transitions**: Business logic for ticket statuses resides in `TicketStatusTransitionFactory`.
+
+
+## 🧪 Testing
+
+```bash
+./vendor/bin/phpunit
+```
+
+There are feature tests covering authentication, ticket endpoints, and error responses.
+
+
+---
+
+For further development or deployment details, consult the in‑code comments and Laravel documentation.
