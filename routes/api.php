@@ -1,13 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Auth\RegisterController;
 
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('/register', [RegisterController::class, 'store']);
+    Route::post('/login', [LoginController::class,    'store']);
+    Route::delete('/login', [LoginController::class,   'destroy'])->middleware('auth:sanctum');
 });
 
 Route::middleware('auth:sanctum')->group(function () {
