@@ -46,6 +46,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 403);
             }
 
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException && $e->getStatusCode() === 403) {
+                return response()->json([
+                    'message' => 'Forbidden.',
+                ], 403);
+            }
+
             if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
                 return response()->json([
                     'message' => 'Resource not found.',
