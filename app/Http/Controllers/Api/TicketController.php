@@ -16,20 +16,11 @@ class TicketController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $tickets = $this->ticketService->listActiveForUser(
-            $request->user()->id
-        );
+        $isArchived = $request->query('archive') === 'true';
 
-        return response()->json([
-            'data' => $tickets
-        ]);
-    }
-
-    public function archiveIndex(Request $request): JsonResponse
-    {
-        $tickets = $this->ticketService->listArchivedForUser(
-            $request->user()->id
-        );
+        $tickets = $isArchived
+            ? $this->ticketService->listArchivedForUser($request->user()->id)
+            : $this->ticketService->listActiveForUser($request->user()->id);
 
         return response()->json([
             'data' => $tickets
@@ -78,6 +69,13 @@ class TicketController extends Controller
             $ticket->creator_id === $request->user()->id,
             403
         );
+
+        $isArchivingRequest = $request->query('archive') === 'true' || $request->input('archive') === true;
+
+        if ($isArchivingRequest) {
+            $this->ticketService->archive($ticket);
+            return response()->json(['message' => 'Ticket archived.']);
+        }
 
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],

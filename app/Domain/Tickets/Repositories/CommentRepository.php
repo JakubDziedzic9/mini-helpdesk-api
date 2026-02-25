@@ -10,4 +10,6 @@ interface CommentRepository
     public function create(array $attributes): Comment;
 
     public function paginateForTicket(int $ticketId, int $perPage = 15): LengthAwarePaginator;
+
+    public function paginateForUser(int $userId, int $perPage = 15): LengthAwarePaginator;
 }

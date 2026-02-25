@@ -20,4 +20,13 @@ class EloquentCommentRepository implements CommentRepository
             ->latest()
             ->paginate($perPage);
     }
+
+    public function paginateForUser(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return Comment::query()
+            ->where('user_id', $userId)
+            ->with('ticket')
+            ->latest()
+            ->paginate($perPage);
+    }
 }
