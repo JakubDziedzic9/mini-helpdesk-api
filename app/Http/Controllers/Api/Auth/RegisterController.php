@@ -14,9 +14,10 @@ class RegisterController extends Controller
 
     public function store(RegisterRequest $request)
     {
-        $result = $this->authService->register(RegisterData::fromArray($request->validated()));
-
-        return (new AuthResource($result))
+        return 
+        (
+            new AuthResource($this->authService->register(RegisterData::fromArray($request->validated())))
+        )
             ->response()
             ->setStatusCode(201);
     }

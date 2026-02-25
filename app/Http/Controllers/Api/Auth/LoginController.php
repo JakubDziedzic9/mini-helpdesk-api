@@ -15,9 +15,7 @@ class LoginController extends Controller
 
     public function store(LoginRequest $request): AuthResource
     {
-        $result = $this->authService->login(LoginData::fromArray($request->validated()));
-
-        return new AuthResource($result);
+        return new AuthResource($this->authService->login(LoginData::fromArray($request->validated())));
     }
 
     public function destroy(Request $request)
