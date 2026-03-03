@@ -47,7 +47,7 @@ All routes are prefixed with `/api` and protected routes require a valid token.
 |--------|---------------------|----------------------------|-------------------------------------------|
 | POST   | `/auth/register`    | Create new user            | `name`, `email`, `password`, `password_confirmation` |
 | POST   | `/auth/login`       | Obtain auth token          | `email`, `password`                       |
-| POST   | `/auth/logout`      | Revoke current token       | – (auth required)                         |
+| DELETE   | `/auth/login`      | Revoke current token       | – (auth required)                         |
 
 ### Tickets
 
